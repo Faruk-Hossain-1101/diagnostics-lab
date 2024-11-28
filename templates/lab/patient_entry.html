@@ -1,0 +1,423 @@
+{% extends "lab/layout/base.html" %}
+{% block extra_style %}
+{% load static %}
+<style>
+  .remove-row {
+    text-decoration: none; /* Optional: removes underline */
+    color: blue; /* Set link color */
+    cursor: pointer; /* Makes the cursor a pointer on hover */
+  }
+  sup {
+    vertical-align: bottom;
+    font-size: 1.5rem;
+  }
+
+</style>
+{% endblock extra_style %}
+{% block content %}
+<div class="container">
+  <div class="page-inner">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Patient Entry</div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              {% comment %} First Row First Column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label for="first_name">First Name<sup >*</sup></label>
+                  <input type="text" class="form-control" id="first_name" placeholder="First Name">
+                </div>
+                
+                <div class="form-group">
+                  <label for="last_name">Last Name<sup >*</sup></label>
+                  <input type="text" class="form-control" id="last_name" placeholder="Last Name">
+                </div>
+
+                <div class="form-group">
+                  <label for="comment">Address<sup >*</sup></label>
+                  <textarea class="form-control" id="address" rows="3"></textarea>
+                </div>
+              </div>
+              {% comment %} First Row Second Column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label for="phone">Phone<sup >*</sup></label>
+                  <input type="text" class="form-control" id="phone" placeholder="Phone Number">
+                </div>
+                
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" class="form-control" id="email" placeholder="Email">
+                </div>
+
+                <div class="form-group">
+                  <label for="comment">Medical History</label>
+                  <textarea class="form-control" id="medical_history" rows="3"></textarea>
+                </div>
+                
+              </div>
+
+              {% comment %} First Row Third Column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label>Gender<sup >*</sup></label><br>
+                  <div class="d-flex">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="gender" id="male" value="M">
+                      <label class="form-check-label" for="flexRadioDefault1">
+                        Male
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="gender" id="female" value="F">
+                      <label class="form-check-label" for="flexRadioDefault2">
+                        Female
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="date">Date of Birth<sup >*</sup></label>
+                  <input type="date" class="form-control" id="dob" >
+                </div>
+                
+              </div>
+            </div>
+
+            <div class="row">
+              {% comment %}  Second Row  First Column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label for="defaultSelect">Select Tests</label>
+                  <select class="form-select form-control" id="test_select">
+                    <option value="">-- Select Test --</option>
+                    <!-- Loop through all tests -->
+                    {% for test in tests %}
+                        <option value="{{ test.id }}" data-name="{{ test.test_name }}" data-price="{{ test.price }}">
+                        {{ test.test_name }}
+                        </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+              </div>
+              {% comment %} Second Row Second Column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                  <div class="form-group">
+                    <label for="defaultSelect">Doctor</label>
+
+                    <div class="d-flex">
+                      <select class="form-select form-control js-example-basic-single" id="doctor_select">
+                        <option value="">-- Select Doctor --</option>
+                        <!-- Loop through all tests -->
+                        {% for refer in referrals %}
+                            <option value="{{ refer.id }}" data-name="{{ refer.name }}">
+                            {{ refer.name }}
+                            </option>
+                        {% endfor %}
+                      </select>
+                      <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#doctor_modal">Add</button>
+                      </div>
+                    </div>
+                </div>
+              </div>
+
+              {% comment %} Second Row Third column{% endcomment %}
+              <div class="col-md-6 col-lg-4">
+                
+              </div>
+
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div class="card table-card" style="display: none;">
+                  <div class="card-header">
+                    <div class="card-title">Test Details</div>
+                  </div>
+                  <div class="card-body">
+                    <table class="table mt-3" id="test-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Test Name</th>
+                          <th scope="col">Price</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% comment %} ROw will be added here {% endcomment %}
+                      </tbody>
+
+                      <tfoot>
+                        <tr>
+                          <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                          <td id="total-price">0</td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          <div class="card-action d-flex">
+            <button class="btn btn-success ms-md-auto" id="addPaitentDetails" >Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% comment %} Modal {% endcomment %}
+<!-- Modal -->
+<div class="modal fade" id="doctor_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Add New Doctor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+            <label for="first_name">Name<sup >*</sup></label>
+            <input type="text" class="form-control" id="refere_name" placeholder="Dr. Jhon Doe">
+          </div>
+          
+          <div class="form-group">
+            <label for="defaultSelect">Referrer Type<sup>*</sup></label>
+            <select class="form-select form-control" id="referrer_type">
+              <option value="">-- Select Referrer Type --</option>
+              {% for referrer in referral_typs %}
+                <option value="{{ referrer.id }}">{{ referrer.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="first_name">Commission Rate</label>
+            <input type="number" class="form-control" id="percentage_value" placeholder="10%">
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="addReffer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<span>
+  {% csrf_token %}
+</span>
+{% endblock content %}
+{% block extra_script %}
+<script src="{% static "assets/js/select2-custom-style.js" %}" ></script>
+<script>
+  // Function to update serial numbers after row removal
+  function updateRowNumbers() {
+    $('#test-table tbody tr').each(function (index) {
+        $(this).find('td').first().text(index + 1); // Update serial number
+    });
+  }
+
+  // Function to update total price
+  function updateTotalPrice() {
+    var total = 0;
+    $('#test-table tbody .test-price').each(function () {
+        total += parseFloat($(this).text()) || 0; // Sum up all prices
+    });
+    $('#total-price').text(total.toFixed(2)); // Display total
+  }
+
+  // Function to toggle the visibility of the table card
+  function toggleTableCard() {
+    var tableBody = $('#test-table tbody');
+    if (tableBody.children('tr').length > 0) {
+        $('.table-card').show(); // Show the table card
+    } else {
+        $('.table-card').hide(); // Hide the table card
+    }
+  }
+  function addToTable(testId, testName, testPrice){
+    // Check if the test is already added to the table
+    var alreadyExists = false;
+    $('#test-table tbody tr').each(function () {
+        if ($(this).data('test-id') == testId) {
+            alreadyExists = true;
+        }
+    });
+
+    if (alreadyExists) {
+      swal("Oops", "The test is already in the table!", {
+          icon: "warning",
+          buttons: {
+              confirm: {
+                  className: "btn btn-warning",
+              },
+          },
+      });
+
+      $(this).val(null).trigger('change'); // Clear the selection
+      return;
+    }
+
+    // Get the table body to insert new rows
+    var tableBody = $('#test-table tbody');
+
+    // Create a new row with serial number, test name, price, and action button
+    var rowCount = tableBody.children('tr').length + 1; // Serial number
+    var rowHtml = `
+        <tr data-test-id="${testId}">
+            <td>${rowCount}</td>
+            <td>${testName}</td>
+            <td class="test-price">${testPrice.toFixed(2)}</td>
+            <td><a class="remove-row fs-3"><i class="fas fa-window-close text-danger"></i></a></td>
+        </tr>
+    `;
+
+    // Append the new row to the table
+    tableBody.append(rowHtml);
+
+    // Update total price
+    updateTotalPrice();
+
+    toggleTableCard()
+
+    // Clear the dropdown selection
+    $(this).val(null).trigger('change');
+
+  }
+
+  $(document).ready(function() {
+
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Initialize Select2 on the dropdown
+    $('#test_select').select2()
+    $('#doctor_select').select2()
+    applySelect2Styles();
+
+    // When a test is selected from the dropdown
+    $('#test_select').on('select2:select', function (e) {
+      var testId = $(this).val();
+      var testName = $(this).find(':selected').data('name');
+      var testPrice = parseFloat($(this).find(':selected').data('price')) || 0; 
+      
+      if (testId === "") {
+          return; // Do nothing if no test is selected
+      }
+
+      $.ajax({
+        url: '{% url "get_child_test" %}',  
+        method: 'POST',
+        data: {"test_id":testId},  
+        dataType: 'json',  
+        headers: {
+            'X-CSRFToken': csrftoken 
+        },
+        success: function(response) {
+          if (response.data.length == 0 ) {
+            addToTable(testId, testName, testPrice)
+          }else{
+            response.data.forEach(function(element) {
+              addToTable(element['id'], element['name'], parseFloat(element['price']))
+              //console.log(typeof element['price'])
+            });
+          }
+          // Reset to null
+          $('#test_select').val(null).trigger('change');
+        },
+        error: function(error){
+          console.log(error)
+        }
+      })
+
+    });
+
+
+    $("#addReffer").on('click', function(){
+      name = $("#refere_name").val()
+      type_id = $("#referrer_type").val()
+      rate = $("#percentage_value").val()
+    
+      $('#refere_name').parent().toggleClass('has-error', !name);
+      $('#referrer_type').parent().toggleClass('has-error', !type_id);
+    
+      $.ajax({
+        url: '{% url "add_referrer" %}',  
+        method: 'POST',
+        data: {"name":name, "type_id": type_id, "rate": rate},  
+        dataType: 'json',  
+        headers: {
+            'X-CSRFToken': csrftoken 
+        },
+        success: function(response) {
+          $("#doctor_select").append(`<option value="${response.data['id']}" selected>${response.data['name']}</option>`)
+          swal("Success", "Referrer added successfully!", {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+
+          $('#doctor_modal').modal('hide');
+        },
+        error: function(error){
+          console.log(error)
+        }
+      })
+      
+    
+    })
+
+    $("#addPaitentDetails").on('click', function(){
+      first_name = $("#first_name").val()
+      last_name = $("#last_name").val()
+      phone = $("#phone").val()
+      email = $("#email").val()
+      address = $("#address").val()
+      medical_history = $("#medical_history").val()
+      gender =  $('input[name="gender"]:checked').val();
+      dob = $("#dob").val()
+      doctor = $("#doctor_select").val()
+
+      $('#first_name').parent().toggleClass('has-error', !first_name);
+      $('#last_name').parent().toggleClass('has-error', !last_name);
+      $('#phone').parent().toggleClass('has-error', !phone);
+      $('#address').parent().toggleClass('has-error', !address);
+      $('input[name="gender"]').parent().toggleClass('has-error', !gender);
+      $('#dob').parent().toggleClass('has-error', !dob);
+      $('#doctor_select').parent().parent().toggleClass('has-error', !doctor);
+
+      console.log(first_name, last_name, phone, email, address, medical_history, gender, dob, doctor)
+
+    })
+
+
+})
+
+// When the remove button is clicked
+$(document).on('click', '.remove-row', function () {
+    $(this).closest('tr').remove(); // Remove the row from the table
+    updateRowNumbers(); // Reassign serial numbers
+    updateTotalPrice(); // Update total price
+    toggleTableCard()
+});
+
+
+
+
+</script>
+{% endblock extra_script %}
