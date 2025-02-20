@@ -7,7 +7,6 @@ from lab.factory import (
     TestFactory,
     ReferralFactory,
     BillingFactory,
-    PaymentDetailFactory,
     AppointmentFactory,
     AppointmentTestFactory,
 )
@@ -33,7 +32,6 @@ class Command(BaseCommand):
             (TestFactory, "Tests"),
             (ReferralFactory, "Referrals"),
             (BillingFactory, "Billings"),
-            (PaymentDetailFactory, "Payment Details"),
             (AppointmentFactory, "Appointments"),
             (AppointmentTestFactory, "Appointment Tests"),
         ]

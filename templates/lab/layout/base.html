@@ -39,10 +39,34 @@
     <link rel="stylesheet" href="{% static 'assets/css/plugins.min.css' %}" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'assets/css/kaiadmin.min.css' %}" />
-
+    <style>
+      #loading-section {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #loading-section .spinner {
+        color: #fff;
+        font-size: 2rem;
+    }
+    </style>
     {% block extra_style %}{% endblock extra_style %}
   </head>
   <body>
+    <div id="loading-section">
+        <div class="spinner">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+        </div>
+    </div>
+    
     <div class="wrapper">
         {% include "lab/layout/sidebar.html" %}
 

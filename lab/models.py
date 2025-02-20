@@ -41,7 +41,6 @@ class Patient(TimestampedModel):
         return f"{self.first_name} {self.last_name}"
     
 class Test(TimestampedModel):
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
     test_name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.PROTECT)
@@ -57,32 +56,6 @@ class Referral(TimestampedModel):
 
     def __str__(self):
         return self.name
-    
-class Billing(TimestampedModel):
-    BILL_TYPE_CHOICES = [('credit', 'Credit'), ('debit', 'Debit')]
-    PAYMENT_STATUS_CHOICES = [('Paid', 'Paid'), ('Unpaid', 'Unpaid')]
-
-    appointment = models.ForeignKey('Appointment', null=True, blank=True, on_delete=models.SET_NULL)
-    bill_type = models.CharField(max_length=50, choices=BILL_TYPE_CHOICES)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    final_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES)
-
-    def __str__(self):
-        return f"Billing {self.id} - {self.payment_status}"
-
-class PaymentDetail(TimestampedModel):
-    PAYMENT_TYPE_CHOICES = [('Online', 'Online'), ('Cash', 'Cash'), ('Cheque', 'Cheque')]
-
-    billing = models.ForeignKey(Billing, on_delete=models.CASCADE)
-    payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE_CHOICES)
-    transaction_id = models.CharField(max_length=100, null=True, blank=True)
-    cheque_number = models.CharField(max_length=50, null=True, blank=True)
-
-    def __str__(self):
-        return f"PaymentDetail {self.id} - {self.payment_type}"
-
 
 class Appointment(TimestampedModel):
     STATUS_CHOICES = [('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled')]
@@ -98,11 +71,26 @@ class Appointment(TimestampedModel):
     def __str__(self):
         return f"Appointment {self.appointment_id} - {self.status}"
 
-class AppointmentTest(TimestampedModel):
+class AppointmentTest(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    test_name = models.CharField(max_length=100)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
     test_price = models.DecimalField(max_digits=10, decimal_places=2)
 
 
     def __str__(self):
         return f"Test {self.test} for Appointment {self.appointment}"
+    
+class Billing(TimestampedModel):
+    PAYMENT_STATUS_CHOICES = [('Paid', 'Paid'), ('Unpaid', 'Unpaid')]
+    PAYMENT_TYPE_CHOICES = [('Online', 'Online'), ('Cash', 'Cash'), ('Cheque', 'Cheque')]
+
+    appointment = models.ForeignKey(Appointment, null=True, blank=True, on_delete=models.SET_NULL)
+    payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE_CHOICES, default="Cash")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"Billing {self.id} - {self.payment_status}"

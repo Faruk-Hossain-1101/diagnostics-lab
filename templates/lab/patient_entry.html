@@ -300,6 +300,7 @@
   }
 
   $(document).ready(function() {
+    $('#loading-section').fadeOut();
 
     var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     // Initialize Select2 on the dropdown
@@ -316,7 +317,7 @@
       if (testId === "") {
           return; // Do nothing if no test is selected
       }
-
+      $('#loading-section').fadeIn();
       $.ajax({
         url: '{% url "get_child_test" %}',  
         method: 'POST',
@@ -336,6 +337,7 @@
           }
           // Reset to null
           $('#test_select').val(null).trigger('change');
+          $('#loading-section').fadeOut();
         },
         error: function(error){
           console.log(error)
@@ -346,13 +348,18 @@
 
 
     $("#addReffer").on('click', function(){
-      name = $("#refere_name").val()
-      type_id = $("#referrer_type").val()
-      rate = $("#percentage_value").val()
+      name = $("#refere_name").val().trim()
+      type_id = $("#referrer_type").val().trim()
+      rate = $("#percentage_value").val().trim()
     
       $('#refere_name').parent().toggleClass('has-error', !name);
       $('#referrer_type').parent().toggleClass('has-error', !type_id);
-    
+
+      if (!name || !type_id){
+        return false;
+      }
+
+      $('#loading-section').fadeIn();
       $.ajax({
         url: '{% url "add_referrer" %}',  
         method: 'POST',
@@ -363,6 +370,103 @@
         },
         success: function(response) {
           $("#doctor_select").append(`<option value="${response.data['id']}" selected>${response.data['name']}</option>`)
+          $('#loading-section').fadeIn();
+          swal("Success", "Referrer added successfully!", {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+
+          $('#doctor_modal').modal('hide');
+
+        },
+        error: function(error){
+          console.log(error)
+        }
+      })
+      
+    
+    })
+
+    $("#addPaitentDetails").on('click', function(){
+      first_name = $("#first_name").val().trim()
+      last_name = $("#last_name").val().trim()
+      phone = $("#phone").val().trim()
+      email = $("#email").val().trim()
+      address = $("#address").val().trim()
+      medical_history = $("#medical_history").val().trim()
+      gender =  $('input[name="gender"]:checked').val()
+      dob = $("#dob").val().trim()
+      doctor = $("#doctor_select").val().trim()
+
+      // Validating the filed 
+      $('#first_name').parent().toggleClass('has-error', !first_name);
+      $('#phone').parent().toggleClass('has-error', !phone);
+      $('#address').parent().toggleClass('has-error', !address);
+      $('input[name="gender"]').parent().toggleClass('has-error', !gender);
+      $('#dob').parent().toggleClass('has-error', !dob);
+      $('#doctor_select').parent().parent().toggleClass('has-error', !doctor);
+
+      // Getting the tests info from table 
+      const tableData = {};
+      $('#test-table tbody tr').each(function () {
+        const rowId = $(this).data('test-id'); // Fetch the data-test-id
+        const price = parseFloat($(this).find('.test-price').text()); // Fetch and convert price to a number
+        const name = $(this).find('td:nth-child(2)').text(); // Fetch the name (2nd column)
+
+        tableData[rowId] = {
+          price: price,
+          name: name
+        };
+      });
+
+      // Check if form empty
+      if(!first_name  || !phone || !address || !gender || !dob || !doctor){
+        return false
+      }
+
+      // Check If tests empty
+      if ($.isEmptyObject(tableData)){
+        swal("Oops", "You must select at least one test!", {
+          icon: "info",
+          buttons: {
+            confirm: {
+              className: "btn btn-warning",
+            },
+          },
+        });
+
+        return false;
+      }
+
+      data = {
+        "first_name":first_name,
+        "last_name":last_name,
+        "phone":phone,
+        "email":email,
+        "address":address,
+        "medical_history":medical_history,
+        "gender":gender,
+        "dob":dob,
+        "doctor":doctor,
+        "tests":JSON.stringify(tableData)
+      }
+
+      $('#loading-section').fadeIn();
+      $.ajax({
+        url: '{% url "add_patient_details" %}',  
+        method: 'POST',
+        data: data,  
+        dataType: 'json',  
+        headers: {
+            'X-CSRFToken': csrftoken 
+        },
+        success: function(response) {
+          $('#loading-section').fadeOut();
+          console.log(response)
           swal("Success", "Referrer added successfully!", {
             icon: "success",
             buttons: {
@@ -378,31 +482,6 @@
           console.log(error)
         }
       })
-      
-    
-    })
-
-    $("#addPaitentDetails").on('click', function(){
-      first_name = $("#first_name").val()
-      last_name = $("#last_name").val()
-      phone = $("#phone").val()
-      email = $("#email").val()
-      address = $("#address").val()
-      medical_history = $("#medical_history").val()
-      gender =  $('input[name="gender"]:checked').val();
-      dob = $("#dob").val()
-      doctor = $("#doctor_select").val()
-
-      $('#first_name').parent().toggleClass('has-error', !first_name);
-      $('#last_name').parent().toggleClass('has-error', !last_name);
-      $('#phone').parent().toggleClass('has-error', !phone);
-      $('#address').parent().toggleClass('has-error', !address);
-      $('input[name="gender"]').parent().toggleClass('has-error', !gender);
-      $('#dob').parent().toggleClass('has-error', !dob);
-      $('#doctor_select').parent().parent().toggleClass('has-error', !doctor);
-
-      console.log(first_name, last_name, phone, email, address, medical_history, gender, dob, doctor)
-
     })
 
 

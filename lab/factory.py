@@ -3,8 +3,9 @@ from factory.django import DjangoModelFactory
 from datetime import date, timedelta
 from .models import (
     Department, ReferralType, Patient, Test, Referral, 
-    Billing, PaymentDetail, Appointment, AppointmentTest
+    Billing, Appointment, AppointmentTest
 )
+from uuid import uuid4
 
 from faker import Faker
 
@@ -43,7 +44,6 @@ class TestFactory(DjangoModelFactory):
     class Meta:
         model = Test
 
-    parent = None  # Set to `None` for root-level tests; override as needed
     test_name = factory.Faker('word')
     description = factory.Faker('paragraph')
     department = factory.SubFactory(DepartmentFactory)
@@ -57,34 +57,6 @@ class ReferralFactory(DjangoModelFactory):
     name = factory.Faker('name')
     type_of_referral = factory.SubFactory(ReferralTypeFactory)
     percentage = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True, max_value=100)
-
-
-class BillingFactory(DjangoModelFactory):
-    class Meta:
-        model = Billing
-
-    appointment = None  # Set to `None` by default; override as needed
-    bill_type = factory.Iterator(['credit', 'debit'])
-    total_amount = factory.Faker('pydecimal', left_digits=5, right_digits=2, positive=True)
-    discount_amount = factory.Faker('pydecimal', left_digits=3, right_digits=2, positive=True)
-    final_amount = factory.LazyAttribute(
-        lambda obj: obj.total_amount - obj.discount_amount
-    )
-    payment_status = factory.Iterator(['Paid', 'Unpaid'])
-
-
-class PaymentDetailFactory(DjangoModelFactory):
-    class Meta:
-        model = PaymentDetail
-
-    billing = factory.SubFactory(BillingFactory)
-    payment_type = factory.Iterator(['Online', 'Cash', 'Cheque'])
-    transaction_id = factory.Faker('uuid4')
-    cheque_number = factory.Maybe(
-        factory.LazyAttribute(lambda o: o.payment_type == 'Cheque'),
-        factory.Faker('bothify', text='CHEQ####'),
-        None,
-    )
 
 
 class AppointmentFactory(DjangoModelFactory):
@@ -106,5 +78,20 @@ class AppointmentTestFactory(DjangoModelFactory):
         model = AppointmentTest
 
     appointment = factory.SubFactory(AppointmentFactory)
-    test_name = factory.Faker('name')
-    test_price = factory.Faker('pydecimal', left_digits=5, right_digits=2, positive=True)
+    test = factory.SubFactory(TestFactory)
+    test_price = factory.LazyAttribute(lambda obj: obj.test.price)
+
+class BillingFactory(DjangoModelFactory):
+    class Meta:
+        model = Billing
+
+    appointment = factory.SubFactory(AppointmentFactory)
+    payment_type = factory.Iterator(['Online', 'Cash', 'Cheque'])
+    total_amount = factory.Faker('pydecimal', left_digits=5, right_digits=2, positive=True)
+    discount_amount = factory.Faker('pydecimal', left_digits=3, right_digits=2, positive=True)
+    final_amount = factory.LazyAttribute(
+        lambda obj: obj.total_amount - obj.discount_amount
+    )
+    payment_status = factory.Iterator(['Paid', 'Unpaid'])
+    transaction_id = factory.LazyFunction(lambda: str(uuid4()).split("-")[-1].upper()) 
+

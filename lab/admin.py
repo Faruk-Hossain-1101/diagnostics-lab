@@ -1,5 +1,5 @@
 from django.contrib import admin
-from lab.models import Department, ReferralType, Patient, Test, Referral, Billing, Appointment, AppointmentTest, PaymentDetail
+from lab.models import Department, ReferralType, Patient, Test, Referral, Billing, Appointment, AppointmentTest
 
 # Register Department model
 class DepartmentAdmin(admin.ModelAdmin):
@@ -42,9 +42,9 @@ admin.site.register(Referral, ReferralsAdmin)
 
 # Register Billings model with custom admin
 class BillingsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'appointment', 'bill_type', 'total_amount', 'final_amount', 'payment_status')
-    search_fields = ('bill_type', 'total_amount')
-    list_filter = ('bill_type', 'payment_status')
+    list_display = ('id', 'appointment', 'total_amount', 'final_amount', 'payment_status')
+    search_fields = ('total_amount',)
+    list_filter = ('payment_status',)
     readonly_fields = ('id',)
 
 admin.site.register(Billing, BillingsAdmin)
@@ -60,16 +60,8 @@ admin.site.register(Appointment, AppointmentsAdmin)
 
 # Register AppointmentTests model with custom admin
 class AppointmentTestsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'test_name', 'test_price', 'appointment_id')
+    list_display = ('id', 'appointment_id', 'test_id', 'test_price')
     readonly_fields = ('id',)
 
 admin.site.register(AppointmentTest, AppointmentTestsAdmin)
 
-# Register PaymentDetails model with custom admin
-class PaymentDetailsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'billing_id', 'payment_type', 'transaction_id', 'cheque_number')
-    search_fields = ('payment_type',)
-    list_filter = ('payment_type',)
-    readonly_fields = ('id',)
-
-admin.site.register(PaymentDetail, PaymentDetailsAdmin)
