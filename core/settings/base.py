@@ -134,6 +134,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR /'static']
 
+if not os.path.exists(BASE_DIR / "logs"):
+    os.mkdir(BASE_DIR / "logs")
 
 LOGGING = {
     'version': 1,
@@ -152,7 +154,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
             'formatter': 'verbose',
         },
         'console': {
