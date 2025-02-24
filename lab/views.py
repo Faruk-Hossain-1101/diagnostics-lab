@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db import transaction
-from lab.models import Test, Referral, ReferralType, Patient, Appointment, AppointmentTest
+from lab.models import Test, Referral, ReferralType, Patient, Appointment, AppointmentTest, Department
 import logging
 
 
@@ -18,11 +18,13 @@ def dashboard(request):
 def patient_entry(request):
     tests = Test.objects.all()
     referral_typs = ReferralType.objects.all()
+    departments = Department.objects.all()
     referrals = Referral.objects.all()
     context = {
         "tests": tests,
         "referrals": referrals,
-        "referral_typs": referral_typs
+        "referral_typs": referral_typs,
+        "departments": departments
     }
     return render(request, 'lab/patient_entry.html', context)
 
@@ -31,9 +33,9 @@ def get_child_test(request):
     if request.method == "POST":
         test_id = request.POST['test_id']
         child_test = Test.objects.filter(parent=test_id)
-        data =[]
+        data = []
         for test in child_test:
-            data.append({"id": test.test_id, "name": test.test_name, "price": test.price})
+            data.append({"id": test.id, "name": test.test_name, "price": test.price})
 
         return JsonResponse({"success":True,"data": data})
 
@@ -43,14 +45,22 @@ def add_referrer(request):
         name = request.POST['name']
         type_id = request.POST['type_id']
         rate_value = request.POST['rate']
-
+        address = request.POST['address']
+        dept_id = request.POST['department_id']
+        if dept_id:
+            department = Department.objects.get(id=dept_id)
+        else:
+            department = None
+        
         referer = Referral(
             name=name,
-            type_of_referral = ReferralType.objects.get(id=type_id),
             percentage = rate_value,
+            address= address,
+            type_of_referral = ReferralType.objects.get(id=type_id),
+            department = department
         )
         referer.save()
-        data = {"id": referer.referral_id, "name":referer.name}
+        data = {"id": referer.id, "name":referer.name}
         return JsonResponse({"success":True, "data":data})
     
 def add_patient_details(request):
@@ -66,8 +76,8 @@ def add_patient_details(request):
             "date_of_birth": request.POST.get('dob'),
         }
 
-        doctor_id = request.POST['doctor']
-        tests_dict = request.POST['tests']
+        doctor_id = request.POST.get('doctor')
+        tests_dict = request.POST.get('tests')
 
         unique_apointment_id = str(uuid.uuid4()).split('-')[-1].upper()  
         india_time = datetime.now(ZoneInfo("Asia/Kolkata"))
@@ -94,14 +104,17 @@ def add_patient_details(request):
                 
                 # Create Tests
                 for test_id, test_details in tests.items():
-                    test_name = test_details.get('name')
                     test_price = test_details.get('price')
                     
                     AppointmentTest.objects.create(
                         appointment=appointment,
-                        test_name=test_name,
+                        test=Test.objects.get(id=int(test_id)),
                         test_price=test_price
                     )
+
+                
+                
+
 
         except Exception as e: 
             logger.warning(f"Something went wrong::{e}")

@@ -193,6 +193,19 @@
             <label for="first_name">Name<sup >*</sup></label>
             <input type="text" class="form-control" id="refere_name" placeholder="Dr. Jhon Doe">
           </div>
+          <div class="form-group">
+            <label for="first_name">Address</label>
+            <input type="text" class="form-control" id="address" placeholder="Address...">
+          </div>
+          <div class="form-group">
+            <label for="defaultSelect">Department</label>
+            <select class="form-select form-control" id="department">
+              <option value="">-- Select Referrer Type --</option>
+              {% for department in departments %}
+                <option value="{{ department.id }}">{{ department.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
           
           <div class="form-group">
             <label for="defaultSelect">Referrer Type<sup>*</sup></label>
@@ -332,7 +345,7 @@
           }else{
             response.data.forEach(function(element) {
               addToTable(element['id'], element['name'], parseFloat(element['price']))
-              //console.log(typeof element['price'])
+              // console.log(typeof element['price'])
             });
           }
           // Reset to null
@@ -351,6 +364,8 @@
       name = $("#refere_name").val().trim()
       type_id = $("#referrer_type").val().trim()
       rate = $("#percentage_value").val().trim()
+      address = $("#address").val().trim()
+      department_id = $("#department").val().trim()
     
       $('#refere_name').parent().toggleClass('has-error', !name);
       $('#referrer_type').parent().toggleClass('has-error', !type_id);
@@ -363,14 +378,14 @@
       $.ajax({
         url: '{% url "add_referrer" %}',  
         method: 'POST',
-        data: {"name":name, "type_id": type_id, "rate": rate},  
+        data: {"name":name, "type_id": type_id, "rate": rate, "address": address, "department_id": department_id},  
         dataType: 'json',  
         headers: {
             'X-CSRFToken': csrftoken 
         },
         success: function(response) {
           $("#doctor_select").append(`<option value="${response.data['id']}" selected>${response.data['name']}</option>`)
-          $('#loading-section').fadeIn();
+          $('#loading-section').fadeOut();
           swal("Success", "Referrer added successfully!", {
             icon: "success",
             buttons: {
@@ -466,15 +481,27 @@
         },
         success: function(response) {
           $('#loading-section').fadeOut();
-          console.log(response)
-          swal("Success", "Referrer added successfully!", {
-            icon: "success",
-            buttons: {
-              confirm: {
-                className: "btn btn-success",
+          if response.success(){
+            swal("Success", "Apoinement scheduled!", {
+              icon: "success",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
               },
-            },
-          });
+            });
+
+          }else{
+            swal("Warning", "Something went wrong!", {
+              icon: "warning",
+              buttons: {
+                confirm: {
+                  className: "btn btn-warning",
+                },
+              },
+            });
+          }
+          
 
           $('#doctor_modal').modal('hide');
         },

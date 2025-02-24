@@ -41,6 +41,7 @@ class Patient(TimestampedModel):
         return f"{self.first_name} {self.last_name}"
     
 class Test(TimestampedModel):
+    parent = models.ForeignKey('self', blank=True, null=True, related_name='children', on_delete=models.CASCADE)
     test_name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.PROTECT)
@@ -51,6 +52,8 @@ class Test(TimestampedModel):
     
 class Referral(TimestampedModel):
     name = models.CharField(max_length=100)
+    address = models.CharField(max_length=100, null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     type_of_referral = models.ForeignKey(ReferralType, on_delete=models.PROTECT)
     percentage = models.DecimalField(max_digits=5, decimal_places=2)
 

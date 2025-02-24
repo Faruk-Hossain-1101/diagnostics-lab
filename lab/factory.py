@@ -43,7 +43,6 @@ class PatientFactory(DjangoModelFactory):
 class TestFactory(DjangoModelFactory):
     class Meta:
         model = Test
-
     test_name = factory.Faker('word')
     description = factory.Faker('paragraph')
     department = factory.SubFactory(DepartmentFactory)
@@ -55,6 +54,8 @@ class ReferralFactory(DjangoModelFactory):
         model = Referral
 
     name = factory.Faker('name')
+    address = factory.Faker('address')
+    department = factory.SubFactory(DepartmentFactory)
     type_of_referral = factory.SubFactory(ReferralTypeFactory)
     percentage = factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True, max_value=100)
 
