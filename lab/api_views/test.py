@@ -2,30 +2,30 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status 
 from django.shortcuts import get_object_or_404
-from lab.models import Patient
-from lab.serializers import PatientSerializer
+from lab.models import Test
+from lab.serializers import TestSerializer
 import logging
 
 logger = logging.getLogger('lab_api')
 
-class PatientView(APIView):
+class TestView(APIView):
     def get(self, request, id=None):
         if id is None:
-            patients = Patient.objects.all()
-            serializer = PatientSerializer(patients, many=True)
+            tests = Test.objects.all()
+            serializer = TestSerializer(tests, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # If id 
         try:
-            patient = get_object_or_404(Patient, id=id)
-            serializer = PatientSerializer(patient)
+            test = get_object_or_404(Test, id=id)
+            serializer = TestSerializer(test)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error(f"Error in get patiet:: {e}")
-            return Response({"success":False, "message": "Patient not found!"}, status=status.HTTP_404_NOT_FOUND)
+            logger.error(f"Error in get test:: {e}")
+            return Response({"success":False, "message": "Test not found!"}, status=status.HTTP_404_NOT_FOUND)
     
     def post(self, request):
-        serializer = PatientSerializer(data=request.data)
+        serializer = TestSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -34,11 +34,11 @@ class PatientView(APIView):
     
     def put(self, request, id):
         try:
-            patient = get_object_or_404(Patient, id=id)
+            test = get_object_or_404(Test, id=id)
         except:
-            return Response({"success":False, "message":"Patient not found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success":False, "message":"Test not found!"}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = PatientSerializer(patient, data=request.data)
+        serializer = TestSerializer(test, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -47,11 +47,11 @@ class PatientView(APIView):
 
     def patch(self, request, id):
         try:
-            patient = get_object_or_404(Patient, id=id)
+            test = get_object_or_404(Test, id=id)
         except:
-            return Response({"success":False, "message":"Patient not found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success":False, "message":"Test not found!"}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = PatientSerializer(patient, data=request.data, partial=True)
+        serializer = TestSerializer(test, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -60,11 +60,11 @@ class PatientView(APIView):
     
     def delete(self, request, id):
         try:
-            patient = get_object_or_404(Patient, id=id)
+            test = get_object_or_404(Test, id=id)
         except:
-            return Response({"success":False, "message":"Patient not found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success":False, "message":"Test not found!"}, status=status.HTTP_404_NOT_FOUND)
         
-        patient.delete()
-        return Response({"success":True, "message":f"Id:{id} - Patient deleted successfully!"}, status=status.HTTP_200_OK)
+        test.delete()
+        return Response({"success":True, "message":f"Id:{id} - Test deleted successfully!"}, status=status.HTTP_200_OK)
         
         
