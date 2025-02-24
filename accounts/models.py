@@ -8,12 +8,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('Technician', 'Technician'),
         ('Admin', 'Admin'),
         ('Staff', 'Staff'),
+        ('User', 'User'),
     ]
-    staff_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=15, unique=True)
     email = models.EmailField(max_length=254, unique=True, null=True, blank=True)
     address = models.TextField()
 
@@ -23,8 +23,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'role', 'phone']  # Specify required fields other than USERNAME_FIELD
+    USERNAME_FIELD = 'phone'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']  # Specify required fields other than USERNAME_FIELD
 
 
     def __str__(self):

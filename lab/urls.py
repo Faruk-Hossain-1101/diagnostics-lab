@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import dashboard, patient_entry, get_child_test, add_referrer, add_patient_details
-from .api_views import PatientView
+from lab.views import dashboard, patient_entry, get_child_test, add_referrer, add_patient_details
+from lab.api_views.patient import PatientView
 
 urlpatterns = [
     path('', dashboard, name="index"),
